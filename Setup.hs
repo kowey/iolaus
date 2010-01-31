@@ -9,12 +9,12 @@ main = build [configurableProgram "shell" "bash" ["shsh","sh"],
                     define "GADT_WITNESSES"
                     ghcFlags ["-fglasgow-exts"])] $
        do autoPatchVersion NumberedPreRc >>= replace "IOLAUS_VERSION"
-          createFile "Iolaus/Help.lhs"
-          hcFlags ["-Iinclude"]
+          createFile "src/Iolaus/Help.lhs"
+          hcFlags ["-Isrc/include"]
           ghcFlags ["-Wall","-threaded"]
           withDirectory "etc" $ etc "bash_completion.d/iolaus"
           withModule "System.Process.Redirects" $ define "HAVE_REDIRECTS"
-          executable "iolaus" "iolaus.hs" []
+          executable "iolaus" "src/iolaus.hs" []
           enforceAllPrivacy
           doc
           allTests
@@ -22,7 +22,7 @@ main = build [configurableProgram "shell" "bash" ["shsh","sh"],
 doc =
     do privateExecutable "preproc" "preproc.hs" []
        xs <- (filter (/= "Show.lhs") .
-              filter (".lhs" `isSuffixOf`)) `fmap` ls "Iolaus/Commands"
+              filter (".lhs" `isSuffixOf`)) `fmap` ls "src/Iolaus/Commands"
        hs <- mapM commandPage $ xs
        mkdir "manual"
        rule ["manual/manual.md"] ("preproc":"doc/iolaus.md":map fst hs) $
@@ -75,11 +75,11 @@ doc =
               "[FAQ]("++toroot++"FAQ.html)\n\n"
           commandPage lhs =
            do rule ["manual/"++lhs2md lhs, "manual/"++lhs2manmd lhs]
-                   ["preproc", "Iolaus/Commands/"++lhs] $
+                   ["preproc", "src/Iolaus/Commands/"++lhs] $
                 do x <- systemOut "./preproc" [nam lhs,
-                                               "Iolaus/Commands/"++lhs]
+                                               "src/Iolaus/Commands/"++lhs]
                    h <- systemOut "./preproc" ["--html", nam lhs,
-                                               "Iolaus/Commands/"++lhs]
+                                               "src/Iolaus/Commands/"++lhs]
                    mkdir "manual"
                    mkdir "man"
                    mkdir "man/man1"
